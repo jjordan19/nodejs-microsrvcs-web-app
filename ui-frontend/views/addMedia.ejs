@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/js/sideBarNav.js"></script>
+</head>
+<body>
+    <header>
+        <h1>
+            <a href="/" style="text-decoration: none; color: inherit;">Welcome to the Movie Center</a>
+        </h1>
+    </header>
+
+    <%- include('partials/nav') %>
+
+    <main>
+        <div class="form-container">
+            <h2>Add Media</h2>
+            <form id="mediaForm" method="POST">
+                <div class="form-group">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <br></br>
+                <div class="form-group">
+                    <label>File extension to append to title:</label>
+                    <label>
+                        <input type="radio" name="options" value="jpg"> jpg
+                    </label>
+                    <label>
+                        <input type="radio" name="options" value="jpeg"> jpeg
+                    </label>
+                    <label>
+                        <input type="radio" name="options" value="png"> png
+                    </label>
+                    <label>
+                        <input type="radio" name="options" value="gif"> gif
+                    </label>
+                    <label>
+                        <input type="radio" name="options" value="webp"> webp
+                    </label>
+                    <label>
+                        <input type="radio" name="options" value="mp4"> mp4
+                    </label>
+                    <label>
+                        <input type="radio" name="options" value="mkv"> mkv
+                    </label>
+                </div>
+                <br>
+                <div class="form-group">
+                    <label for="model">Model:</label>
+                    <input type="text" id="model" name="model" required>
+                </div>
+                <br>
+                <br>
+                <div class="form-group">
+                    <label>Explicit Content:</label>
+                    <label>
+                        <input type="radio" name="explicit_content" value="true" required> True
+                    </label>
+                    <label>
+                        <input type="radio" name="explicit_content" value="false" required> False
+                    </label>
+                </div>
+                <br>
+                <div class="form-group">
+                    <button type="submit">Add Media</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    <br>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.getElementById('mediaForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+            const formData = new FormData(this);
+            const data = {};
+            
+            // Collect form data into an object
+            formData.forEach((value, key) => {
+                if (data[key]) {
+                    if (!Array.isArray(data[key])) {
+                        data[key] = [data[key]];
+                    }
+                    data[key].push(value);
+                } else {
+                    data[key] = value;
+                }
+            });
+
+            // Append options to title if available
+            if (data.options) {
+                if (!Array.isArray(data.options)) {
+                    data.options = [data.options];
+                }
+                const appendedTitle = data.options.join(' ');
+                data.title += '.' + appendedTitle; // Append options to title
+            }
+
+            const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+            
+            // Determine the base URL dynamically
+            const baseURL = isMobile
+            ? `http://0.0.0.0:3002` // Use the device's IP address
+            : `http://localhost:3002`;
+            
+            // Set the pathname for API request
+            const pathname = `${baseURL}/api/media`;
+
+            // Remove options from the data object since they're already appended to the title
+            delete data.options;
+
+            // Convert explicit_content to boolean
+            data.explicit_content = data.explicit_content === 'true';
+
+            console.log(JSON.stringify([data]));
+
+            // Send form data using Axios
+            axios.post(pathname, JSON.stringify([data]), {
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => {
+                console.log('Server response:', response.data);
+                // alert('Media added successfully!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to add media!');
+            });
+        });
+    </script>
+    <footer>
+        <p>&copy; 2025 My Website. All rights reserved.</p>
+    </footer>
+</body>
+</html>

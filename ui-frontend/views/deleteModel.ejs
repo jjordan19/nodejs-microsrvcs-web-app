@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><%= title %></title>
+        <link rel="stylesheet" href="/styles.css">
+        <script src="/js/sideBarNav.js" defer></script>
+    </head>
+    <body>
+        <header>
+            <h1>
+                <a href="/" style="text-decoration: none; color: inherit;">Welcome to the Movie Center</a>
+            </h1>
+        </header>
+        <%- include('partials/nav') %>
+        
+        <main>
+            <h1>Delete Model(s)</h1>
+            <form id="deleteForm" action="http://model:3001/api/modelList" method="post">
+                <div id="aliasContainer">
+                  <div class="aliasDiv">
+                    <label for="alias">Name:</label>
+                    <input type="text" id="name" class="aliasInput" name="alias" required><br><br>
+                  </div>
+                </div>
+            
+                <button type="button" id="addAliasBtn">Add Model Name</button><br><br>
+            
+                <button type="submit" id="submitButton">Delete</button>
+            </form>
+        </main>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script>
+            // Need to be able to delete multiple models by using addAliasBtn
+            // document.addEventListener('DOMContentLoaded', function() {
+            //     const addAliasBtn = document.getElementById('addAliasBtn');
+            //     const aliasContainer = document.getElementById('aliasContainer');
+            //     let aliasCount = 1;
+            
+            //     addAliasBtn.addEventListener('click', function() {
+            //     const div = document.createElement('div');
+            //     div.classList.add('aliasDiv');
+            //     const label = document.createElement('label');
+            //     label.textContent = `Alias ${++aliasCount}: `;
+            //     const input = document.createElement('input');
+            //     input.type = 'text';
+            //     input.classList.add('aliasInput');
+            //     input.name = `alias`;
+            //     input.required = true;
+            //     const br = document.createElement('br');
+            //     const br2 = document.createElement('br');
+            //     div.appendChild(label);
+            //     div.appendChild(input);
+            //     div.appendChild(br);
+            //     div.appendChild(br2);
+            //     aliasContainer.appendChild(div);
+            //     });
+            // });
+
+            document.getElementById('deleteForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent form submission
+                
+                // // Get form data
+                // const formData = new FormData(this);
+                // const data = {};
+                // // formData.forEach((value, key) => {
+                // //     data[key] = value;
+                // // });
+                // formData.forEach((value, key) => {
+                //     if (data[key]) {
+                //     if (!Array.isArray(data[key])) {
+                //         data[key] = [data[key]];
+                //     }
+                //     data[key].push(value);
+                //     } else {
+                //     data[key] = value;
+                //     }
+                // });
+
+                // console.log(JSON.stringify([data]))
+
+                var aliasesInput = document.getElementById('name').value;
+
+                const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+                // Determine the base URL dynamically
+                const baseURL = isMobile
+                    ? `http://0.0.0.0:3001` // Use the device's IP address
+                    : `http://model:3001`;
+
+                axios.delete(`${baseURL}/api/model/${aliasesInput}`)
+                    .then(response => {
+                        console.log('Response:', response.data);
+                        // alert('List processed successfully');
+                    })
+                    .catch(error => {
+                        console.error('There was an error!', error);
+                        alert('Failed to delete model!');
+                    });
+            });
+        </script>
+        <footer>
+            <p>&copy; 2025 My Website. All rights reserved.</p>
+        </footer>
+    </body>
+</html>

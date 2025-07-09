@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/js/sideBarNav.js"></script>
+</head>
+<body>
+    <header>
+        <h1>
+            <a href="/" style="text-decoration: none; color: inherit;">Welcome to the Movie Center</a>
+        </h1>
+    </header>
+
+    <%- include('partials/nav') %>
+
+    <main>
+        <h1>Download Media</h1>
+        <form id="downloadForm">
+            <label for="mediaUrl">Media URL:</label>
+            <input type="text" id="mediaUrl" name="mediaUrl" required>
+            <br><br>
+            <label for="newName">New Name (optional):</label>
+            <input type="text" id="newName" name="newName">
+            <br><br>
+            <label for="folder">Folder Path (optional):</label>
+            <input type="text" id="folder" name="folder">
+            <br><br>
+            <button type="submit">Download</button>
+        </form>
+    </main>
+    <br>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.getElementById('downloadForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const mediaUrl = document.getElementById('mediaUrl').value;
+            const newName = document.getElementById('newName').value;
+            const folder = document.getElementById('folder').value;
+            const body = JSON.stringify({mediaUrl, newName, folder})
+            console.log(body)
+
+            // Log details to the server console
+            const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+            // Determine the base URL dynamically
+            const baseURL = isMobile
+                ? `http://0.0.0.0:3000` // Use the device's IP address
+                : `http://localhost:3000`;
+
+            axios.post(`${baseURL}/download`, body, {
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => {
+                console.log('Server response:', response);
+                // Handle response if needed
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to download!');
+            });
+        });
+    </script>
+    <footer>
+        <p>&copy; 2025 My Website. All rights reserved.</p>
+    </footer>
+</body>
+</html>

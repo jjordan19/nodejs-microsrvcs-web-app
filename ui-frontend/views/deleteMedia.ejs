@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/js/sideBarNav.js"></script>
+</head>
+<body>
+    <header>
+        <h1>
+            <a href="/" style="text-decoration: none; color: inherit;">Welcome to the Movie Center</a>
+        </h1>
+    </header>
+
+    <%- include('partials/nav') %>
+
+    <main>
+        <div class="form-container">
+            <h2>Delete Media</h2>
+            <form id="mediaForm">
+                <div class="form-group">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <br></br>
+                <div class="form-group">
+                    <label>Media Type:</label>
+                    <label>
+                        <input type="radio" id="ext_img" name="extension" value="image" required> Image
+                    </label>
+                    <label>
+                        <input type="radio" id="ext_vid" name="extension" value="video" required> Video
+                    </label>
+                </div>
+                <br></br>
+                <div class="form-group">
+                    <button type="submit">Delete Media</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    <br></br>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Need to be able to delete multiple models by using addAliasBtn
+        document.getElementById('mediaForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+            const aliasesInput = document.getElementById('title').value;
+            
+            // Define the API endpoint
+            const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+            // Determine the base URL dynamically
+            const baseURL = isMobile
+                ? `http://0.0.0.0:3002` // Use the device's IP address
+                : `http://localhost:3002`;
+            const pathname = `${baseURL}/api/media/${aliasesInput}`;
+
+            // Get selected media type
+            const mediaType = document.getElementById('ext_img').checked ? 'image' :
+                            document.getElementById('ext_vid').checked ? 'video' : null;
+
+            if (!mediaType) {
+                console.log('No media type selected');
+                return;
+            }
+
+            axios.delete(pathname, {
+                headers: { 'media-type': mediaType }  // Send media type in headers
+            })
+            .then(response => {
+                console.log('Server response:', response.data);
+            })
+            .catch(error => {
+                console.error('There was an error!', error);
+                alert('Failed to delete media!');
+            });
+        });
+    </script>
+    <footer>
+        <p>&copy; 2025 My Website. All rights reserved.</p>
+    </footer>
+</body>
+</html>

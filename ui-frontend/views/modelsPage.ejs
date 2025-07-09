@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/js/sideBarNav.js"></script>
+    <script src="/js/changeImgUrl.js" defer></script>
+    <style>
+        .model-name {
+            color: black;
+            margin: 0;
+            font-size: 14px;
+            text-align: center;
+        }
+        .edit-button {
+            background-color: #007bff;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 5px;
+        }
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            border: 2px solid #000000; /* Add border for visualization */
+            object-fit: inherit;
+        }
+        .image-item {
+            width: 100%; /* Ensure images take full width of their grid cell */
+            height: 500px; /* Maintain aspect ratio */
+            border: 3px solid #000000; /* Add border for visualization */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add shadow for visualization */
+            box-sizing: border-box; /* Ensure border-box sizing */
+            overflow: hidden; /* Make sure image doesn't stretch beyond the div with a scrolling affect (auto) */
+            
+        }
+        .card {
+            background-color: white;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s;
+        }
+        .image-item.flipped .card {
+            transform: rotateY(180deg);
+        }
+        .card-front,
+        .card-back {
+            color: black;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+            background-color: #f8f9fa;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        /* Base Styles */
+        .alphabetical-sort-container {
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+            background-color: #f5f5f5; /* Light background color */
+        }
+
+        .alphabetical-sort-bar {
+            display: flex;
+            flex-wrap: wrap; /* Allows the links to wrap to the next line on smaller screens */
+            justify-content: center;
+            gap: 10px; /* Space between each link */
+        }
+
+        .alphabetical-sort-bar a {
+            display: inline-block;
+            text-decoration: none;
+            font-weight: bold;
+            color: #333;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .alphabetical-sort-bar a:hover {
+            background-color: #d4d4d4; /* Darken on hover */
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 768px) {
+            .alphabetical-sort-bar a {
+                padding: 8px 12px;
+                font-size: 14px; /* Slightly smaller font size on mobile */
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .alphabetical-sort-bar {
+                justify-content: space-between;
+                gap: 5px; /* Reduce gap on very small screens */
+            }
+
+            .alphabetical-sort-bar a {
+                padding: 6px 8px;
+                font-size: 12px; /* Even smaller font size on very small screens */
+            }
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination a {
+            margin: 0 5px;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: black;
+            border: 1px solid #ddd;
+        }
+        .pagination a.active {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+        }
+        .pagination a:hover:not(.active) {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>
+            <a href="/" style="text-decoration: none; color: inherit;">Welcome to the Movie Center</a>
+        </h1>
+    </header>
+    <%- include('partials/nav') %>
+    <nav style="display: flex; justify-content: center; padding: 20px;">
+        <div class="alphabetical-sort-container">
+            <div class="alphabetical-sort-bar">
+                <% 'abcdefghijklmnopqrstuvwxyz'.split('').forEach(letter => { %>
+                    <a href="/models?letter=<%= letter %>&limit=<%= limit %><%= currentPage ? `&page=${currentPage}` : '' %>" data-letter="<%= letter %>"><%= letter.toUpperCase() %></a>
+                <% }) %>
+            </div>
+        </div>
+    </nav>
+    <main>
+        <% if (mediaType === 'model') { %>
+            <div class="image-container" id="imageContainer">
+                <% data.forEach(data => { %>
+                    <% const imageSrc = data.imageThumbnail; %>
+                    <div class="image-item">
+                        <div class="card">
+                            <div class="card-front">
+                                <div>
+                                    <div class="model-name" model-name="<%= data.name %>">
+                                        <a href="http://localhost:3000/search?q=<%= data.name %>"><%= data.name %></a>
+                                    </div>
+                                    <button class="edit-button">Edit</button>
+                                </div>
+                                <img class="image-id" objectid="<%= imageSrc %>" src="" alt="<%= data.name %>">
+                                <!-- <div>
+                                </div> -->
+                            </div>
+                            <div class="card-back">
+                                <form class="edit-form">
+                                    <div class="form-group">
+                                        <label for="name-<%= data._id %>">Name:</label>
+                                        <input type="text" id="name-<%= data._id %>" name="name" value="<%= data.name %>">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="race-<%= data._id %>">Race:</label>
+                                        <input type="text" id="race-<%= data._id %>" name="race" value="<%= data.race %>">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="alias-<%= data._id %>">Alias:</label>
+                                        <input type="text" id="alias-<%= data._id %>" name="alias" value="<%= data.alias %>">
+                                    </div>
+                                    <!-- <div class="form-group">
+                                        <label for="images-<%= data._id %>">Images:</label>
+                                        <input type="text" id="images-<%= data._id %>" name="images" value="<%= data.images %>">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="videos-<%= data._id %>">Videos:</label>
+                                        <input type="text" id="videos-<%= data._id %>" name="videos" value="<%= data.videos %>">
+                                    </div> -->
+                                    <button type="submit">Save</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+            <div class="pagination">
+                <% if (currentPage > 1) { %>
+                    <a href="/models?page=<%= currentPage - 1 %>&limit=<%= limit %><%= letter ? `&letter=${letter}` : '' %>">&laquo; Previous</a>
+                <% } %>
+                <% for (let i = Math.max(1, currentPage - 2); i <= Math.min(currentPage + 2, totalPages); i++) { %>
+                    <a href="/models?page=<%= i %>&limit=<%= limit %><%= letter ? `&letter=${letter}` : '' %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+                <% } %>
+                <% if (currentPage < totalPages) { %>
+                    <a href="/models?page=<%= currentPage + 1 %>&limit=<%= limit %><%= letter ? `&letter=${letter}` : '' %>">Next &raquo;</a>
+                <% } %>
+            </div>
+        <% } %>
+    </main>
+    <br></br>
+    <br></br>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const images = document.querySelectorAll('.image-id');
+            const placeholderImage = '/images/placeholder.jpg';
+
+            const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+            
+            // Determine the base URL dynamically
+            const baseURL = isMobile
+            ? `http://0.0.0.0:3002` // Use the device's IP address
+            : `http://localhost:3002`;
+            
+            console.log(baseURL)
+
+            for (const image of images) {
+                const imgSrc = image.getAttribute('objectid') || null;
+                if (imgSrc) {
+                    try {
+                        const response = await axios.get(`${baseURL}/api/mediaId/${imgSrc}`);
+                        let imageUrl = response.data.imageUrl;
+                        // On mobile, the imageURL is set from the DB and the IP is not being set:
+                        if (isMobile) {
+                            imageUrl = imageUrl.replace("localhost", "0.0.0.0");
+                        }
+                        //
+                        if (imageUrl) {
+                            image.setAttribute('src', imageUrl);
+                        } else {
+                            image.setAttribute('src', placeholderImage);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching image:', error);
+                        image.setAttribute('src', placeholderImage);
+                    }
+                } else {
+                    image.setAttribute('src', placeholderImage);
+                }
+            }
+
+            document.querySelectorAll('.edit-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const parentItem = this.closest('.image-item');
+                    parentItem.classList.toggle('flipped');
+                });
+            });
+
+            document.querySelectorAll('.edit-form').forEach(form => {
+                form.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    const parentItem = this.closest('.image-item');
+                    const formData = new FormData(this);
+                    const formJSON = Object.fromEntries(formData.entries());
+                    const modelId = form.querySelector('input[name="name"]').id.split('-')[1];
+                    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+            
+                    // Determine the base URL dynamically
+                    const baseURL = isMobile
+                    ? `http://0.0.0.0:3001` // Use the device's IP address
+                    : `http://localhost:3001`;
+
+
+                    console.log(baseURL)
+                    try {
+                        const response = await axios.post(`${baseURL}/api/updateModel/${modelId}`, JSON.stringify(formJSON), {
+                            headers: {
+                                "Content-Type": "application/json"
+                            }
+                        });
+                        if (response.status === 200) {
+                            const updatedData = response.data;
+                            parentItem.querySelector('.model-name').textContent = updatedData.name;
+                            parentItem.classList.remove('flipped'); /* Flips card back over if update was successful */
+                            
+                            // Reload the page
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.error('Error updating model:', error);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.alphabetical-sort-bar a').forEach(letter => {
+                letter.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const selectedLetter = this.getAttribute('data-letter');
+                    let currentPage = 1; // Set currentPage to 1
+                    const limit = new URLSearchParams(window.location.search).get('limit') || 10;
+
+                    fetch(`/models?letter=${selectedLetter}&page=${currentPage}&limit=${limit}`)
+                        .then(response => response.text())
+                        .then(html => {
+                            document.querySelector('html').innerHTML = html; // Replace content of main element
+                            history.pushState(null, '', `/models?letter=${selectedLetter}&page=${currentPage}&limit=${limit}`);
+                        })
+                        .catch(error => console.error('Error fetching sorted data:', error));
+                });
+            });
+
+        });
+    </script>
+    <footer>
+        <p>&copy; 2025 My Website. All rights reserved.</p>
+    </footer>
+</body>
+</html>

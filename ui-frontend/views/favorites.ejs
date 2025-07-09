@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/js/sideBarNav.js"></script>
+    <script src="/js/changeImgUrl.js" defer></script>
+    
+    <style>
+        /* Dark theme */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 a {
+            text-decoration: none;
+            color: #ff9800;
+        }
+
+        .media-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: auto;
+            padding: 20px;
+            justify-content: center;
+        }
+
+        .media-item {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 12px rgba(255, 152, 0, 0.3);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .media-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 7px 18px rgba(255, 152, 0, 0.4);
+        }
+
+        .media-item img, 
+        .media-item video {
+            width: 100%;
+            max-width: 100%;
+            height: 350px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 99%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            text-align: center;
+        }
+
+        .modal img,
+        .modal video {
+            width: auto;
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+        }
+
+        .modal-title {
+            color: #ff9800;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>
+        <a href="/">Welcome to the Movie Center</a>
+    </h1>
+
+    <%- include('partials/nav') %>
+
+    <div class="media-container">
+        <% media.forEach((item, index) => { %>
+            <div class="media-item">
+                <div onclick="openModal('<%= item.imageUrl || item.videoUrl %>', '<%= item.videoUrl ? 'video' : 'image' %>', '<%= item.title %>', <%= index %>)">
+                    <% if (item.imageUrl) { %>
+                        <img src="<%= item.imageUrl %>" alt="<%= item.title %>">
+                    <% } else if (item.videoUrl) { %>
+                        <video src="<%= item.videoUrl %>" controls loop muted></video>
+                    <% } %>
+                </div>
+                <div class="title-background" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <span class="media-title"><%= item.title %></span>
+                    <button class="favorite-btn" data-id="<%= item._id %>" data-type="<%= item.videoUrl ? 'video' : 'image' %>" data-favorited="<%= item.views ? 1 : 0 %>">
+                        <%= item.views ? '❤️' : '🤍' %>
+                    </button>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+
+    <div id="mediaModal" class="modal" style="display: none;">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle" class="modal-title"></h2>
+        <div class="modal-content">
+            <img id="modalImage" style="display: none;">
+            <video id="modalVideo" controls style="display: none;">
+                <source id="modalVideoSrc" type="video/mp4">
+            </video>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        let mediaItems = [];
+        let currentIndex = -1;
+        document.body.addEventListener('click', async (event) => {
+            const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+            const baseURL = isMobile ? 'http://0.0.0.0:3002' : 'http://localhost:3002';
+
+            if (event.target.classList.contains('favorite-btn')) {
+                event.stopPropagation(); // Prevent triggering openModal
+
+                const button = event.target;
+                const mediaId = button.getAttribute('data-id');
+                const mediaType = button.getAttribute('data-type');
+                const isFavorited = parseInt(button.getAttribute('data-favorited')) === 1;
+
+                try {
+                    const response = await axios.post(`${baseURL}/api/favorite_update`, {
+                        id: mediaId,
+                        favorited: !isFavorited,
+                        mediaType
+                    });
+
+                    if (response.data.success) {
+                        button.innerHTML = !isFavorited ? "❤️" : "🤍";
+                        button.setAttribute('data-favorited', !isFavorited ? "1" : "0");
+                    }
+                } catch (err) {
+                    console.error('Error updating favorite:', err);
+                }
+            }
+            return;
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            mediaItems = Array.from(document.querySelectorAll(".media-item"));
+        });
+
+        function openModal(url, type, title, index) {
+            let modal = document.getElementById("mediaModal");
+            let img = document.getElementById("modalImage");
+            let video = document.getElementById("modalVideo");
+            let videoSrc = document.getElementById("modalVideoSrc");
+            let modalTitle = document.getElementById("modalTitle");
+
+            modalTitle.innerText = title;
+            currentIndex = index;
+
+            if (type === "image") {
+                img.src = url;
+                img.style.display = "block";
+                video.style.display = "none";
+            } else {
+                videoSrc.src = url;
+                video.load();
+                video.style.display = "block";
+                img.style.display = "none";
+            }
+
+            modal.style.display = "flex";
+            document.addEventListener("keydown", handleKeydown);
+        }
+
+        function closeModal() {
+            document.getElementById("mediaModal").style.display = "none";
+            document.removeEventListener("keydown", handleKeydown);
+        }
+
+        window.onload = () => {
+            document.getElementById("mediaModal").style.display = "none";
+        };
+
+        function handleKeydown(event) {
+            if (event.key === "Escape") {
+                closeModal();
+            } else if (event.key === "ArrowRight") {
+                navigateMedia(1);
+            } else if (event.key === "ArrowLeft") {
+                navigateMedia(-1);
+            }
+        }
+
+        function navigateMedia(direction) {
+            if (mediaItems.length === 0) return;
+
+            currentIndex += direction;
+            if (currentIndex < 0) currentIndex = mediaItems.length - 1;
+            else if (currentIndex >= mediaItems.length) currentIndex = 0;
+
+            let selectedItem = mediaItems[currentIndex];
+            let mediaUrl = selectedItem.querySelector("img, video source")?.src;
+            let mediaType = selectedItem.querySelector("img") ? "image" : "video";
+            let mediaTitle = selectedItem.querySelector(".media-title")?.innerText || "Media";
+
+            openModal(mediaUrl, mediaType, mediaTitle, currentIndex);
+        }
+    </script>
+</body>
+</html>

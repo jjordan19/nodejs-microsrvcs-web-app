@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/js/sideBarNav.js"></script>
+    <script src="/js/changeImgUrl.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>
+            <a href="/" style="text-decoration: none; color: inherit;">Welcome to the Movie Center</a>
+        </h1>
+    </header>
+
+    <%- include('partials/nav') %>
+
+
+    <main>
+        <% if (mediaType === 'movies' || mediaType === 'dances') { %>
+            <div class="video-container">
+                <% data.forEach(data => { %>
+                    <div class="video-item">
+                        <div class="title-background">
+                            <span><%= data.title %></span>
+                            <button class="favorite-btn" data-id="<%= data._id %>" data-type="video" data-favorited="<%= data.views %>">
+                                <%= data.views ? '❤️' : '🤍' %>
+                            </button>
+                        </div>
+                        <video src="<%= data.videoUrl %>" controls loop muted></video>
+                    </div>
+                <% }) %>
+            </div>
+            <button id="loadMore" class="load-more" onclick="loadMoreMedia()">Load More</button>
+
+        <% } else if (mediaType === 'gallery' || mediaType === 'pictures' || mediaType === 'graphics') { %>
+            <div class="image-container">
+                <% data.forEach(data => { %>
+                    <div class="image-item">
+                        <div class="title-background">
+                            <span><%= data.title %></span>
+                            <button class="favorite-btn" data-id="<%= data._id %>" data-type="image" data-favorited="<%= data.views %>">
+                                <%= data.views ? '❤️' : '🤍' %>
+                            </button>
+                        </div>
+                        <a href="<%= data.imageUrl %>">
+                            <img src="<%= data.imageUrl %>" alt="<%= data.title %>">
+                        </a>
+                    </div>
+                <% }) %>
+            </div>
+            <button id="loadMore" class="load-more" onclick="loadMoreMedia()">Load More</button>
+
+        <% } else if (mediaType === 'model') { %>
+            <% if (randomModel.length === 0) { %>
+                <!-- No Content -->
+            <% } else { %>
+                <div class="model-container">
+                    <div class="model-item">
+                        <a href="<%= randomModel[0].imageThumbnail %>">
+                            <img src="<%= randomModel[0].imageThumbnail %>" alt="<%= randomModel[0].name %>">
+                        </a>
+                        <p><a href="http://localhost:3000/search?q=<%= randomModel[0].name %>" style="color: red;"><%= randomModel[0].name %></a></p>
+                    </div>
+                </div>
+            <% } %>
+        <% } else if (mediaType === 'search') { %>
+            <% if (vUrls.length === 0 && iUrls.length === 0) { %>
+                Model: <%= query %>
+                <p>No results found.</p>
+            <% } else { %>
+                Model: <%= name_of_model %>
+                <br>
+                <% if (alias_of_model[0] === '') { %>
+
+                <% } else { %>
+                    Aliases: <%= alias_of_model %>
+                <% } %>
+            <% } %>
+            <div class="results-container">
+                <% vUrls.forEach(videoResults => { %>
+                    <div class="image-item">
+                        <div class="title-background">
+                            <button class="favorite-btn" 
+                                    data-id="<%= videoResults.substring(0, videoResults.indexOf(':')) %>" 
+                                    data-type="video" 
+                                    data-favorited="<%= videoResults.split(':').pop() %>">
+                                <%= parseInt(videoResults.split(':').pop()) === 1 ? '❤️' : '🤍' %>
+                            </button>
+                        </div>
+                        <video src="<%= videoResults.split(':').slice(1, -1).join(':') %>" controls loop muted></video>
+                    </div>
+                <% }) %>
+            
+                <% iUrls.forEach(imageResults => { %>
+                    <div class="image-item">
+                        <div class="title-background">
+                            <button class="favorite-btn" 
+                                    data-id="<%= imageResults.substring(0, imageResults.indexOf(':')) %>" 
+                                    data-type="image" 
+                                    data-favorited="<%= imageResults.split(':').pop() %>">
+                                <%= parseInt(imageResults.split(':').pop()) === 1 ? '❤️' : '🤍' %>
+                            </button>
+                        </div>
+                        <a href="<%= imageResults.split(':').slice(1, -1).join(':') %>">
+                            <img src="<%= imageResults.split(':').slice(1, -1).join(':') %>" alt="<%= imageResults.title %>">
+                        </a>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        let currentPage = 1;
+
+        function appendMediaToPage(media, cat) {
+            if (cat === "movies" || cat === "dances") {
+                const container = document.querySelector('.video-container');
+                media.forEach(item => {
+                    const mediaItem = document.createElement('div');
+                    mediaItem.classList.add('video-item');
+                    mediaItem.innerHTML = `
+                        <div class="title-background">
+                            <span>${item.title}</span>
+                            <button class="favorite-btn" data-id="${item._id}" data-type="video" data-favorited="${item.views}">
+                                ${item.views ? '❤️' : '🤍'}
+                            </button>
+                        </div>
+                        <video src="${item.videoUrl}" controls loop muted></video>
+                    `;
+                    container.appendChild(mediaItem);
+                });
+            } else {     
+                const container = document.querySelector('.image-container');
+                media.forEach(item => {
+                    const mediaItem = document.createElement('div');
+                    mediaItem.classList.add('image-item');
+                    mediaItem.innerHTML = `
+                        <div class="title-background">
+                            <span>${item.title}</span>
+                            <button class="favorite-btn" data-id="${item._id}" data-type="image" data-favorited="${item.views}">
+                                ${item.views ? '❤️' : '🤍'}
+                            </button>
+                        </div>
+                        <a href="${item.imageUrl}">
+                            <img src="${item.imageUrl}" alt="${item.title}">
+                        </a>
+                    `;
+                    container.appendChild(mediaItem);
+                });
+            }
+        }
+
+        async function loadMoreMedia() {
+            currentPage++; // Increment the page number
+            const category = window.location.pathname.split('/')[1];
+
+            // Detect if the user is on a mobile device
+            const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+            // Determine the base URL dynamically
+            const baseURL = isMobile
+                ? `http://0.0.0.0:3002` // Use the device's IP address
+                : `http://localhost:3002`;
+
+            // Make the request using the appropriate base URL
+            const response = await axios.get(`${baseURL}/api/media/${category}`);
+
+            if (response.status === 200) {
+                let newMedia = response.data;
+
+                // Update imageUrl for mobile to include the IP address
+                if (isMobile) {
+                    newMedia = newMedia.map(item => ({
+                        ...item,
+                        imageUrl: item.imageUrl ? item.imageUrl.replace('localhost', '0.0.0.0') : item.imageUrl
+                    }));
+                }
+
+                appendMediaToPage(newMedia, category); // Append new media to the page
+            } else {
+                console.error('No more media found or an error occurred.');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.addEventListener('click', async (event) => {
+                const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+                // Determine the base URL dynamically
+                const baseURL = isMobile ? `http://0.0.0.0:3002` : `http://localhost:3002`;
+                    
+                if (event.target.classList.contains('favorite-btn')) {
+                    const button = event.target;
+                    const mediaId = button.getAttribute('data-id');
+                    const mediaType = button.getAttribute('data-type');
+                    const isFavorited = parseInt(button.getAttribute('data-favorited')) === 1;
+
+                    try {
+                        const response = await axios.post(`${baseURL}/api/favorite_update`, { 
+                            id: mediaId, 
+                            favorited: !isFavorited, 
+                            mediaType 
+                        });
+
+                        if (response.data.success) {
+                            button.innerHTML = !isFavorited ? "❤️" : "🤍";
+                            button.setAttribute('data-favorited', !isFavorited ? "1" : "0");
+                        }
+                    } catch (error) {
+                        console.error('Error favoriting:', error);
+                    }
+                }
+            });
+
+            const footer = document.getElementById('pageFooter');
+            let isScrolling;
+    
+            window.addEventListener('scroll', () => {
+                footer.classList.add('hidden');
+    
+                // Clear timeout if user is still scrolling
+                clearTimeout(isScrolling);
+    
+                // Set a timeout to run after scrolling ends
+                isScrolling = setTimeout(() => {
+                    footer.classList.remove('hidden');
+                }, 1000); // 1000ms = 1 second delay after scrolling stops
+            });
+        });
+    </script>
+    <br></br>
+    <footer id="pageFooter">
+        <p>&copy; 2025 My Website. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

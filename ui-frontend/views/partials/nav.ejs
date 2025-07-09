@@ -1,0 +1,28 @@
+<nav>
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="/fav">Favorites</a>
+        <br>
+        <a href="/createModel">Create Model</a>
+        <a href="/deleteModel">Delete Model</a>
+        <a href="/models">Models</a>
+        <a href="/addMedia">Add Media</a>
+        <a href="/deleteMedia">Delete Media</a>
+        <a href="/downloadPage">Media Download</a>
+        <a href="/listem">List</a>
+    </div>
+    <span class="menu-icon" onclick="openNav()">&#9776;</span>
+    <div class="nav-links">
+        <% if (parental_advisor_mode) { %>
+            <a href="/movies">Movies</a>
+            <a href="/dances">Dances</a>
+            <a href="/gallery">Gallery</a>
+            <a href="/pictures">Pictures</a>
+            <a href="/graphics">Graphics</a>
+        <% } %>
+    </div>
+    <form action="/search" method="get" class="search-form">
+        <input type="text" name="q" placeholder="Searching..">
+        <button type="submit">Search</button>
+    </form>
+</nav>

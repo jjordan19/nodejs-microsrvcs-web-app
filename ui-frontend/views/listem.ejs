@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <header>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/js/sideBarNav.js"></script>
+    <script src="/js/changeImgUrl.js" defer></script>
+
+      <h1>
+          <a href="/" style="text-decoration: none; color: inherit;">Welcome to the Movie Center</a>
+      </h1>
+  </header>
+  <%- include('partials/nav') %>
+  <ul>
+    <% models.forEach(model => { %>
+      <li>
+        <a href="http://localhost:3000/search?q=<%= model.name %>" style="font-size: 32px; color: ghostwhite;">
+          <%= model.name %>:<%= model.race || 'Unknown' %>:<%= model.alias || 'Unknown' %>
+        </a>
+      </li>
+    <% }) %>
+  </ul>
+</html>
