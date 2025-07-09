@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  ui-server:
+    image: ui-server:latest
+    build:
+      context: ./
+      dockerfile: ui_Dockerfile
+    container_name: ui
+    ports:
+      - "3000:3000"
+    volumes:
+      - /path/to/media/directory:/app/ui-frontend/local 
+    depends_on:
+      - mongo
+      - media
+      - model
+    networks:
+      - media-serving-network
+
+  media:
+    image: media-server:latest
+    build:
+      context: ./
+      dockerfile: media_Dockerfile
+    container_name: media
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongo
+    networks:
+      - media-serving-network
+
+  model:
+    image: model-server:latest
+    build:
+      context: ./
+      dockerfile: model_Dockerfile
+    container_name: model
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+    networks:
+      - media-serving-network
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ~/path/to/persistent/data/volume/:/data/db
+    networks:
+      - media-serving-network
+      
+
+networks:
+  media-serving-network:
+    name: media-serving-network
+    driver: bridge
+
