@@ -65,3 +65,11 @@ Access the site at:
 ```arduino 
 http:localhost:3000
 ```
+## Main Page
+<img width="1710" alt="Screenshot 2025-07-09 at 12 55 33 AM" src="https://github.com/user-attachments/assets/c4152fc4-7bfc-4dc5-aa14-c624df516b58" />
+
+## Model Page
+<img width="1709" alt="Screenshot 2025-07-09 at 12 51 17 AM" src="https://github.com/user-attachments/assets/ae574bbf-a095-4c7e-b546-25c9f7526570" />
+
+## Nav Bar
+<img width="249" alt="Screenshot 2025-07-09 at 12 52 25 AM" src="https://github.com/user-attachments/assets/b7511f85-d617-4476-8e24-69be66df208b" />
